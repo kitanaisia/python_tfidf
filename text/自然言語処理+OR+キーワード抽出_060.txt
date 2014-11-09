@@ -1,0 +1,17 @@
+概要
+自然言語処理(Natural Language Processing; NLP)に関する勉強会です。
+理論と実践の両面から深く学び、発表と議論を通じて共有していくことを目的としています。
+発表
+音声認識のためのN-gram言語モデル by @y_shindohさん
+Burst Detection from Stream 〜流行に疎いぼくらが流行を知る方法〜 by @ohkuraさん
+Confidence WeightedをLearning to Rankに適用してみた by @tkngさん
+統計的機械翻訳入門(仮) by @nokuno
+Discovering Concepts from Word Cooccurrences with a Relational Model 読む by @suzuvie_reさん
+参加条件
+連絡のため、Googleグループに参加していることが条件です。
+自然言語処理勉強会@東京 | Google Groups
+会場について
+ECナビさん(渋谷)をお借り出来ました。@ajiyoshiさん、ありがとうございます!
+参考書
+Foundations of Statistical Natural Language Processing
+第4回 自然言語処理勉強会@東京 : ATND

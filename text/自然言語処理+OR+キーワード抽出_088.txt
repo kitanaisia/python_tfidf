@@ -1,0 +1,44 @@
+mecabのインストール  &dagger;
+インストールディレクトリを/usr/local/mecabとする
+$ ./configure --prefix=/usr/local/mecab/
+$ make 2>&1 | tee make.log
+$ sudo make install 2>&1 | tee make_install.log
+mecab-ipadicのインストール  &dagger;
+インストールディレクトリを/usr/local/mecabとし、文字コードをutf8、mecab-configのパスも指定する。
+$ ./configure --prefix=/usr/local/mecab/ --with-charset=utf8 --with-mecab-config=/usr/local/mecab/bin/mecab-config
+$ make 2>&1 | tee make.log
+$ sudo make install 2>&1 | tee make_install.log
+mecab-rubyのインストール  &dagger;
+mecab-ruby-0.98.tar.gzをダウンロードし、展開。
+$ cd mecab-ruby-0.98
+$ ruby extconf.rb
+とすると、エラー。
+extconf.rb:10:in ``': No such file or directory - mecab-config --libs-only-l (Errno::ENOENT)
+from extconf.rb:10:in `<main>'
+mecab-configにパスが通っていないことが原因の模様。環境変数PATHに/usr/local/mecab/binを追加し、実行。
+$ ruby extconf.rb
+checking for main() in -lmecab... no
+checking for main() in -lstdc++... yes
+checking for mecab.h... yes
+creating Makefile
+エラーが出ていないようなので先に進む。
+※test.rb実行前に以下のようにtest.rbを編集
+# coding: utf-8
+#!/usr/bin/ruby
+#
+$LOAD_PATH << "."
+require 'MeCab'
+(# coding: utf-8と$LOAD_PATH << "."を追記)
+$ make
+$ ruby test.rb
+test.rbでエラーが出てしまった。
+0.98
+ruby: symbol lookup error: /home/aki/src/mecab-ruby-0.98/MeCab.so: undefined symbol: _ZN5MeCab12createTaggerEPKc
+原因はextconf.rb実行時の
+checking for main() in -lmecab... no
+このメッセージ。mkmf.logを見ると、エラーの内容が書かれている。
+コンパイル時のようにld.so.confにパス/usr/local/mecab/libを追記すればよいだろうと思っていたが、それでは対応できず。結果、extconf.rb実行時にオプションを指定する
+$ ruby extconf.rb --with-opt-lib=/usr/local/mecab/lib
+makeを行うと、test.rbが実行できる。
+test.rbが実行できたらmake installして終了。
+自然言語処理/MeCab - PukiWiki

@@ -1,0 +1,3 @@
+概要
+M1 の学生を中心に、自然言語処理の基礎勉強会を行っています。年度によって読む文献が変わります。2013年度は Speech and Language Processing を読む予定です。
+自然言語処理の基礎勉強会 - NAIST Computational Linguistics

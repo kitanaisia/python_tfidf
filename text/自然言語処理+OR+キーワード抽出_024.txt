@@ -1,0 +1,72 @@
+
+googleの中の人たちが作ったword2vecというモノがあります。deep learningを自然言語(N-gram?)に適用することにより単語を100次元くらいのベクトル空間にマップする物だと思います。面白さは以下のベージの通りですが、たったこれだけの事で、ほとんど意味理解の一歩手前まで到達していると思います。
+Taku Kudo : word2vec で少し遊んでみた。いわゆる deep…
+面白いのは、2つのベクトルの差が、2つの単語の関係をよく近似してくれること。
+(中略)
+A B C  X  (A  Bの関係に対し、 C  X に当てはまるXを探す)
+グーグル ヤフー トヨタ  日産
+渋谷 新宿 札幌  旭川
+警察 泥棒 正義  くそ
+平和 戦争 左  右
+社員 会社 生徒  小学校
+空 海 天井  床板
+生きる 死ぬ 動く  止まる
+・・・
+Deep-learningはラテン語の動詞活用を学習できるか?
+est: sum (to be) の直説法現在3人称単数
+sunt: 同3人称複数
+dat: dō (to give) の直説法現在3人称単数
+dant: 同3人称複数
+おおすごい。
+word2vecに英辞郎データを放り込んでみた - naoya_t@hatenablog
+("see" と「見る」の関係が、"find" と何の関係に似ているかを調べます)
+------------------------------------------------------------------------
+見つける		0.450238
+見いだす		0.439524
+喜ぶ		0.435330
+最後のなんか本来の使用法と違うと思うけど、意味がある結果が出て来ちゃう。
+上はうまく行った例で、やってみるとずいぶん間違った類推も多いですが、うちにいる4才児もまあ似たようなものです。しかも学習時間は日本語wikipedia全文を突っ込んでもわずか30分程度。人間ってなんなんだろうと思いますよ。機械学習だし人手に比べれば不完全極まりない訳ですが、WordNetのような意味ネットワークを作ろうとする試みの足下くらいには30分で自動で行っちゃえるわけですよ。
+で、上記のような自然言語処理(NLP)を知っている人にとってはword2vecの扱いは簡単すぎるくらいだし、形態素解析などの前処理も常識すぎるので、やり方を書いてないのですが、私のようなやった事の無い人はちょっと困った訳です。で、やり方を以下にまとめておきます。(私の環境はOSX 10.9ですが、ほかのversionやほかのUNIXでもほぼ手続きは同じだと思います。)
+(ちなみに単に試してみたいだけなら、自分で走らせる必要は無くてDEEP LEARNERというwebサイトがあって類義語や上記の3項アナロジーなどを試す事が出来ます。)
+まずはコーパスを持ってこなくてはなりません。まずは無料で簡単に手に入るWikipediaの日本語版にします。
+http://ja.wikipedia.org/wiki/Wikipedia:データベースダウンロードからたどれる
+http://dumps.wikimedia.org/jawiki/の
+jawiki-latest-pages-articles.xml.bz2をダウンロードします。bz2圧縮されたファイルの大きさは2GBに届かないくらいです。
+次にxmlやらwiki記法などをなどを取り除いてplain.txtにするひつようがあります。それには長谷部氏のwp2txtを使うのが簡単です。
+CUI版はhttps://github.com/yohasebe/wp2txt
+GUI版はhttp://rubyforge.org/projects/wp2txt/
+です。(wp2txtはRubyを必要としますが、OSXでしたらプレインストールされています。)GUI版はもうupdateされていないのでCUI版のほうが良いのですが、堕落したMacユーザである私はGUI版を使いました。wp2txtは直接bz2圧縮ファイルを入力出来ます。wp2txtの出力ファイルは99MBにする事をお勧めします。それでも20個ほどの出力fileができますが。私は出力のコードはUTF8、本文paragraph以外の出力はみな抑制しましたが、これはお好みで。出力は20個ほどのファイルに分割されますが、そのときはターミナルappから
+cat jawiki-latest-pages-articles.xml-* > jawiki.txt
+などとして連結すればよいです。このテキストファイルの大きさは今だと2GBちょっとくらいです。
+次にword2vecは単語ごとにスペースで分かち書きされている必要があるので、そのために工藤さんのmecabをインストールします。私は「オススメ」のipa辞書を使いました。方法はmecabのページ
+http://mecab.googlecode.com/svn/trunk/mecab/doc/index.html
+に分りやすく書いてあります。OSXの時はsuしてmake installが
+% sudo make install
+になるのが注意です。macabはデフォルトでは文字コードがEUCなのですが、このページの説明書き通り辞書を
+% tar zxfv mecab-ipadic-2.7.0-xxxx
+% ./configure --with-charset=utf8
+% make
+とやってもUTF8に出来ませんでしたが、2番目の方法
+% cd mecab-ipadic-2.7.0-xxxx
+% /usr/local/libexec/mecab/mecab-dict-index -f euc-jp -t utf-8
+# make install
+で、うまく行きました。(ただ、はまっている間mecab本体に対しても./configure --with-charset=utf8をやったのも効いている可能性があります。)
+mecabのインストールが出来たら先ほどのtext化したファイルに対して
+% mecab -Owakati jawiki.txt > jawikisep.txt
+として分かち書きします。
+次にword2vecのインストールです。本家
+https://code.google.com/p/word2vec/
+からソースコードをダウンロードして一つのフォルダに入れます。で、私の環境ではソースコードから#include を取り除く必要がありました。あとは
+% make
+です。
+最後に、先ほどの分かち書きしたファイルに対してトレーニングを行います。
+% ./word2vec -train jawikisep.txt -output jawikisep.bin -size 200 -threads 4 -binary 1
+どうも-binary optionをつけないと次に使うとき読み込めないようです。驚くべき事に30分程度でトレーニングが終わります。
+あとは
+./distance jawikisep.bin
+とか
+./word-analogy jawikisep.bin
+とかして楽しみましょう。
+私は最初はwikipediaの最初の10MBでやっていたのですが、これは精度が低かったようです。100MBにするとすこし改善、1GBにすると大きく改善。全部(2.2GB)にするとさらに少しだけ改善しました。上の工藤さんの例ほどうまくは行かないのですが、まあ、wikipediaは文体に偏りがあるからかも知れないとおもっています。たとえば光闇、善?とかやるとでない訳ですが、まあ、wikipediaって「闇」とか「善」とか使わなそうですしね。
+さらに上のDEEP LEARNERにも負けているっぽいのですが、これは学習のパラメータをもう少し勉強した方がいいのかも知れません。
+自然言語処理をなにも知らない私がword2vecを走らせるまで: 最尤日記
