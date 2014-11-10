@@ -30,7 +30,7 @@ def get_tf(file_path):
 
     # 名詞の集合(重複なし)を用意し，各名詞毎に出現回数をカウントする
     for key in set(nouns):
-        tf[key] = nouns.count(key) 
+        tf[key] = nouns.count(key) / len(nouns)
 
     return tf
 
